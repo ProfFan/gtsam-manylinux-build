@@ -49,29 +49,3 @@ jobs:
         user: __token__
         password: ${{ secrets.GTSAM_UPLOAD_TOKEN }}
         packages_dir: wheelhouse/
-  mac-build:
-    name: macOS Build
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        pyversion: ["python"]
-    steps:
-    - name: Checkout
-      uses: actions/checkout@master
-    - name: Build the macOS wheels
-      run: |
-        ./build-macos.sh ${{ matrix.pyversion }}
-    - name: Rename wheels with revision
-      run: |
-        mv wheelhouse/gtsam-4.0.3-py3-none-any.whl wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-py3-none-any.whl
-    - name: Archive wheels
-      uses: actions/upload-artifact@v1
-      with:
-        name: gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-py3-none-any.whl
-        path: wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-py3-none-any.whl
-    - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        user: __token__
-        password: ${{ secrets.GTSAM_UPLOAD_TOKEN }}
-        packages_dir: wheelhouse/
