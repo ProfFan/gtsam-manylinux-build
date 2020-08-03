@@ -61,8 +61,7 @@ jobs:
     - name: Build the macOS wheels
       run: |
         ./build-macos.sh ${{ matrix.pyversion }}
-    - name: Rename wheels with revision (2.7)
-      if: matrix.pyversion == 'cp27-cp27mu'
+    - name: Rename wheels with revision
       run: |
         mv wheelhouse/gtsam-4.0.3-py3-none-any.whl wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-py3-none-any.whl
     - name: Archive wheels
