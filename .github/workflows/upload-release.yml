@@ -26,11 +26,11 @@ jobs:
     - name: Rename wheels with revision
       if: matrix.pyversion != 'cp27-cp27mu'
       run: |
-        mv wheelhouse/gtsam-4.0.3-${{ matrix.pyversion }}-manylinux2014_x86_64.whl wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2014_x86_64.whl
+        sudo mv wheelhouse/gtsam-4.0.3-${{ matrix.pyversion }}-manylinux2014_x86_64.whl wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2014_x86_64.whl
     - name: Rename wheels with revision (2.7)
       if: matrix.pyversion == 'cp27-cp27mu'
       run: |
-        mv wheelhouse/gtsam-4.0.3-${{ matrix.pyversion }}-manylinux2010_x86_64.whl wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2010_x86_64.whl
+        sudo mv wheelhouse/gtsam-4.0.3-${{ matrix.pyversion }}-manylinux2010_x86_64.whl wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2010_x86_64.whl
     - name: Archive wheels
       if: matrix.pyversion != 'cp27-cp27mu'
       uses: actions/upload-artifact@v1
