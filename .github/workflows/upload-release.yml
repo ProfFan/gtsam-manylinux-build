@@ -1,0 +1,78 @@
+name: Upload Release to PyPI
+
+on:
+  push:
+    branches:
+      - release
+env:
+  GTSAM_PYPI_REVISION_NUMBER: 1
+jobs:
+  build:
+    name: Linux Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        pyversion: ["cp27-cp27mu", "cp35-cp35m", "cp36-cp36m", "cp37-cp37m", "cp38-cp38"]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Build the Linux wheels
+      run: |
+        if [[ "${{ matrix.pyversion }}" == "cp27-cp27mu" ]]; then
+          sudo docker run --rm -e PLAT=manylinux2010_x86_64 -v `pwd`:/io quay.io/pypa/manylinux2010_x86_64 /io/build-wheels.sh ${{ matrix.pyversion }}
+        else
+          sudo docker run --rm -e PLAT=manylinux2014_x86_64 -v `pwd`:/io quay.io/pypa/manylinux2014_x86_64 /io/build-wheels.sh ${{ matrix.pyversion }}
+        fi
+    - name: Rename wheels with revision
+      if: matrix.pyversion != 'cp27-cp27mu'
+      run: |
+        mv wheelhouse/gtsam-4.0.3-${{ matrix.pyversion }}-manylinux2014_x86_64.whl wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2014_x86_64.whl
+    - name: Rename wheels with revision (2.7)
+      if: matrix.pyversion == 'cp27-cp27mu'
+      run: |
+        mv wheelhouse/gtsam-4.0.3-${{ matrix.pyversion }}-manylinux2010_x86_64.whl wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2010_x86_64.whl
+    - name: Archive wheels
+      if: matrix.pyversion != 'cp27-cp27mu'
+      uses: actions/upload-artifact@v1
+      with:
+        name: gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2014_x86_64.whl
+        path: wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2014_x86_64.whl
+    - name: Archive wheels (2.7)
+      if: matrix.pyversion == 'cp27-cp27mu'
+      uses: actions/upload-artifact@v1
+      with:
+        name: gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2010_x86_64.whl
+        path: wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-${{ matrix.pyversion }}-manylinux2010_x86_64.whl
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.GTSAM_UPLOAD_TOKEN }}
+        packages_dir: wheelhouse/
+  mac-build:
+    name: macOS Build
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        pyversion: ["python"]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Build the macOS wheels
+      run: |
+        ./build-macos.sh ${{ matrix.pyversion }}
+    - name: Rename wheels with revision (2.7)
+      if: matrix.pyversion == 'cp27-cp27mu'
+      run: |
+        mv wheelhouse/gtsam-4.0.3-py3-none-any.whl wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-py3-none-any.whl
+    - name: Archive wheels
+      uses: actions/upload-artifact@v1
+      with:
+        name: gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-py3-none-any.whl
+        path: wheelhouse/gtsam-4.0.3-${{ env.GTSAM_PYPI_REVISION_NUMBER }}-py3-none-any.whl
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.GTSAM_UPLOAD_TOKEN }}
+        packages_dir: wheelhouse/
